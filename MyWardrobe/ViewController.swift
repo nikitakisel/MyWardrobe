@@ -16,7 +16,7 @@ struct Clothes {
     var category: String
     var tempMin: Int
     var tempMax: Int
-    var image: String
+    var image: Data
 }
 
 
@@ -103,9 +103,9 @@ class DBManager
                 let tempMax = sqlite3_column_int(queryStatement, 5)
                 let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
                 
-                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: image))
+                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
                 print("Query Result:")
-                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax) | \(image)")
+                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax)")
             }
         } else {
             print("SELECT statement could not be prepared")
@@ -137,8 +137,12 @@ protocol AddNewClothesDelegate: AnyObject {
     func updateAllClothesTable()
 }
 
+protocol ShowClothesItemInfoDelegate: AnyObject {
+    func showClothesItemInfo(vc: UIViewController)
+}
 
-class ViewController: UIViewController, AddNewClothesDelegate {
+
+class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate {
     
     
     @IBOutlet weak var clothesTableView: UITableView!
@@ -167,6 +171,9 @@ class ViewController: UIViewController, AddNewClothesDelegate {
         self.clothesTableView.reloadData()
     }
     
+    func showClothesItemInfo(vc: UIViewController) {
+        navigationController?.pushViewController(vc, animated: true)
+    }
     
     @IBAction func addClothesButtonPressed(_ sender: UIButton) {
         let sb = UIStoryboard(name: "Main", bundle: nil)
@@ -175,7 +182,6 @@ class ViewController: UIViewController, AddNewClothesDelegate {
         
         navigationController?.pushViewController(addClothesVC, animated: true)
     }
-    
 }
 
 
@@ -192,7 +198,7 @@ extension ViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MainClothesTableViewCell", for: indexPath) as! MainClothesTableViewCell
-//        cell.emptyCommentDelegate = self
+        cell.showClothesItemInfoDelegate = self
 
         cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image)
 

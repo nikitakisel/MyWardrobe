@@ -8,13 +8,16 @@
 import Foundation
 import UIKit
 
-class AddClothesViewController: UIViewController {
+class AddClothesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
     @IBOutlet weak var categoryPickerView: UIPickerView!
     @IBOutlet weak var tempMinPickerView: UIPickerView!
     @IBOutlet weak var tempMaxPickerView: UIPickerView!
+    
+    @IBOutlet weak var previewImageView: UIImageView!
+    @IBOutlet weak var imageNameLabel: UILabel!
     
     var categories: [String] = ["Голова", "Верхняя", "Под верх", "Нижняя", "Обувь"]
     var temps: [Int] = []
@@ -23,14 +26,18 @@ class AddClothesViewController: UIViewController {
     var category: String = ""
     var tempMinValue: Int = -1
     var tempMaxValue: Int = 1
-    var image: String = ""
+    
+    var imageName: String = ""
+    var imageData: Data = Data(base64Encoded: "")!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         for i in -30...45 {
             temps.append(i)
         }
+        
         temps.reverse()
+        self.previewImageView.contentMode = .scaleAspectFill
         
         categoryPickerView.dataSource = self
         categoryPickerView.delegate = self
@@ -52,6 +59,14 @@ class AddClothesViewController: UIViewController {
     }
     
     
+    @IBAction func addImageButtonPressed(_ sender: UIButton) {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.sourceType = .photoLibrary // Choose photo library as source
+        present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    
     @IBAction func addPostButtonPressed(_ sender: UIButton) {
         guard let name = self.nameTextField.text, !name.isEmpty else {
             self.alert(message: "Вы не ввели название одежды!")
@@ -62,7 +77,7 @@ class AddClothesViewController: UIViewController {
             self.alert(message: "Минимальная температура больше максимальной!")
         } else {
             let dbConnection = DBManager()
-            dbConnection.insert(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.image)
+            dbConnection.insert(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
             
             DispatchQueue.main.async {
                 let alert = UIAlertController(title: "Успешно!", message: "Вещь добавлена в гардероб!", preferredStyle: .alert)
@@ -84,6 +99,37 @@ class AddClothesViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+
+        if let image = info[.originalImage] as? UIImage,
+           let imageName = info[.imageURL] as? URL {
+            self.imageName = imageName.lastPathComponent
+            self.imageNameLabel.text = self.imageName
+
+            if let imageData = image.jpegData(compressionQuality: 1.0) {
+                self.imageData = imageData
+                self.previewImageView.image = UIImage(data: self.imageData)
+                // postImageData теперь содержит строку Base64
+            } else if let imageData = image.pngData() {
+                self.imageData = imageData
+                self.previewImageView.image = UIImage(data: self.imageData)
+                // postImageData теперь содержит строку Base64
+            } else {
+                print("Не удалось преобразовать изображение в данные.")
+            }
+
+        } else {
+            print("Error: No image found or URL couldn't be accessed.")
+            self.imageName = "" // Reset the name if there's an issue.
+            self.imageData = Data(base64Encoded: "")! // Reset the data if there's an issue.
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
     }
     
     func clearForm() {

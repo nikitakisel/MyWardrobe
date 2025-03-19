@@ -10,14 +10,13 @@ import UIKit
 
 class MainClothesTableViewCell: UITableViewCell {
     
-    
-    
     @IBOutlet weak var clothesSmalllImageView: UIImageView!
     @IBOutlet weak var clothesNameLabel: UILabel!
     @IBOutlet weak var clothesDescriptionLabel: UILabel!
     @IBOutlet weak var clothesTempLabel: UILabel!
     
-    var info: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: 1, image: "")
+    var info: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: 1, image: Data(base64Encoded: "")!)
+    var showClothesItemInfoDelegate: ShowClothesItemInfoDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -27,7 +26,7 @@ class MainClothesTableViewCell: UITableViewCell {
         super.init(coder: coder)
     }
     
-    func configure(id: Int, name: String, description: String, category: String, tempMin: Int, tempMax: Int, image: String) {
+    func configure(id: Int, name: String, description: String, category: String, tempMin: Int, tempMax: Int, image: Data) {
         self.info.id = id
         self.info.name = name
         self.info.description = description
@@ -56,4 +55,14 @@ class MainClothesTableViewCell: UITableViewCell {
             self.clothesSmalllImageView.image = UIImage(systemName: "person.fill")
         }
     }
+    
+    
+    @IBAction func showClothesItemInfoButtonPressed(_ sender: UIButton) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let clothesItemInfoVC = sb.instantiateViewController(withIdentifier: "ClothesItemInfoViewController") as! ClothesItemInfoViewController
+        clothesItemInfoVC.uploadInfo(info: self.info)
+        
+        self.showClothesItemInfoDelegate?.showClothesItemInfo(vc: clothesItemInfoVC)
+    }
+    
 }
