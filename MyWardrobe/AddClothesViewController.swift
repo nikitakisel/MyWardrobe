@@ -8,7 +8,10 @@
 import Foundation
 import UIKit
 
-class AddClothesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class AddClothesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+    
+    
+    @IBOutlet weak var viewControllerTitle: UILabel!
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
@@ -18,6 +21,11 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
     
     @IBOutlet weak var previewImageView: UIImageView!
     @IBOutlet weak var imageNameLabel: UILabel!
+    
+    weak var updateClothesDelegate: AddNewClothesDelegate?
+    weak var uploadInfoDelegate: UploadInfoDelegate?
+    var isEditingModeOn = false
+    var postIdForEditing = -1
     
     var categories: [String] = ["Голова", "Верхняя", "Под верх", "Нижняя", "Обувь"]
     var temps: [Int] = []
@@ -32,11 +40,8 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        for i in -30...45 {
-            temps.append(i)
-        }
-        
-        temps.reverse()
+
+        self.viewControllerTitle.text = "Новая одежда"
         self.previewImageView.contentMode = .scaleAspectFill
         
         categoryPickerView.dataSource = self
@@ -50,7 +55,35 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
         tempMaxPickerView.dataSource = self
         tempMaxPickerView.delegate = self
         tempMaxPickerView.tag = 3
+        
+        for i in -40...50 {
+            temps.append(i)
+        }
+        temps.reverse()
+        
+        if !temps.isEmpty {
+            var defaultRow = 0
+            
+            if let elemIndex = temps.firstIndex(of: -40) {
+                defaultRow = elemIndex
+                self.tempMinValue = -40
+            }
+            self.tempMinPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+            
+            if let elemIndex = temps.firstIndex(of: 50) {
+                defaultRow = elemIndex
+                self.tempMaxValue = 50
+            }
+            self.tempMaxPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+        }
 
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tapGesture.cancelsTouchesInView = false // Allows touches to be passed to other views
+        self.view.addGestureRecognizer(tapGesture)
+
+        self.nameTextField.delegate = self
+        self.descriptionTextField.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -58,6 +91,52 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
         navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
+    @objc func handleTap() {
+        self.view.endEditing(true)
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func startClothesEditing(clothesInfo: Clothes) {
+        isEditingModeOn = true
+        DispatchQueue.main.async {
+            self.postIdForEditing = clothesInfo.id
+            self.viewControllerTitle.text = "Редактирование"
+            self.nameTextField.text = clothesInfo.name
+            self.descriptionTextField.text = clothesInfo.description
+            self.imageData = clothesInfo.image!
+            displayBase64Image(imageData: clothesInfo.image, imageView: self.previewImageView)
+            
+            if !self.categories.isEmpty {
+                var defaultRow = 0
+                
+                if let elemIndex = self.categories.firstIndex(of: clothesInfo.category) {
+                    defaultRow = elemIndex
+                    self.category = clothesInfo.category
+                }
+                self.categoryPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+            }
+            
+            if !self.temps.isEmpty {
+                var defaultRow = 0
+                
+                if let elemIndex = self.temps.firstIndex(of: clothesInfo.tempMin) {
+                    defaultRow = elemIndex
+                    self.tempMinValue = clothesInfo.tempMin
+                }
+                self.tempMinPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+                
+                if let elemIndex = self.temps.firstIndex(of: clothesInfo.tempMax) {
+                    defaultRow = elemIndex
+                    self.tempMaxValue = clothesInfo.tempMax
+                }
+                self.tempMaxPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+            }
+        }
+    }
     
     @IBAction func addImageButtonPressed(_ sender: UIButton) {
         let imagePickerController = UIImagePickerController()
@@ -77,10 +156,17 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
             self.alert(message: "Минимальная температура больше максимальной!")
         } else {
             let dbConnection = DBManager()
-            dbConnection.insert(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
+            let messageShow = isEditingModeOn ? "Информация обновлена!" : "Вещь добавлена в гардероб!"
+            
+            if isEditingModeOn == true {
+                dbConnection.update(id: self.postIdForEditing, name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
+                self.uploadInfoDelegate?.uploadInfo(info: Clothes(id: self.postIdForEditing, name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData))
+            } else {
+                dbConnection.insert(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
+            }
             
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Успешно!", message: "Вещь добавлена в гардероб!", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Успешно!", message: messageShow, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
                     self?.navigationController?.popViewController(animated: true)
                     self?.addNewClothesDelegate?.updateAllClothesTable()
@@ -172,5 +258,4 @@ extension AddClothesViewController: UIPickerViewDelegate {
             self.tempMaxValue = temps[row]
         }
     }
-
 }

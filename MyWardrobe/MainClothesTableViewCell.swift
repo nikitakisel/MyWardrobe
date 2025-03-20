@@ -16,7 +16,7 @@ class MainClothesTableViewCell: UITableViewCell {
     @IBOutlet weak var clothesTempLabel: UILabel!
     
     var info: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: 1, image: Data(base64Encoded: "")!)
-    var showClothesItemInfoDelegate: ShowClothesItemInfoDelegate?
+    weak var showClothesItemInfoDelegate: ShowClothesItemInfoDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -58,11 +58,6 @@ class MainClothesTableViewCell: UITableViewCell {
     
     
     @IBAction func showClothesItemInfoButtonPressed(_ sender: UIButton) {
-        let sb = UIStoryboard(name: "Main", bundle: nil)
-        let clothesItemInfoVC = sb.instantiateViewController(withIdentifier: "ClothesItemInfoViewController") as! ClothesItemInfoViewController
-        clothesItemInfoVC.uploadInfo(info: self.info)
-        
-        self.showClothesItemInfoDelegate?.showClothesItemInfo(vc: clothesItemInfoVC)
+        self.showClothesItemInfoDelegate?.showClothesItemInfo(info: self.info)
     }
-    
 }
