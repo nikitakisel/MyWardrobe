@@ -255,7 +255,7 @@ extension AddClothesViewController: UIPickerViewDelegate {
         if pickerView.tag == 1 {
             return categories[row]
         } else {
-            return String(temps[row])
+            return "\(temps[row])°C"
         }
     }
     
