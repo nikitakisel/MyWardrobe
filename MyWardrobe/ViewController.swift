@@ -16,7 +16,17 @@ struct Clothes {
     var category: String
     var tempMin: Int
     var tempMax: Int
-    var image: String
+    var image: Data?
+    
+    mutating func copy(_ obj: Clothes) {
+        self.id = obj.id
+        self.name = obj.name
+        self.description = obj.description
+        self.category = obj.category
+        self.tempMin = obj.tempMin
+        self.tempMax = obj.tempMax
+        self.image = obj.image
+    }
 }
 
 
@@ -86,6 +96,30 @@ class DBManager
         }
         sqlite3_finalize(insertStatement)
     }
+    
+    func update(id: Int, name: String, description: String, category: String, tempMin: Int, tempMax: Int, image: String) {
+        let updateStatementString = "UPDATE Clothes SET name = ?, description = ?, category = ?, temp_min = ?, temp_max = ?, image = ? WHERE id = ?;"
+        var updateStatement: OpaquePointer? = nil
+        if sqlite3_prepare_v2(db, updateStatementString, -1, &updateStatement, nil) == SQLITE_OK {
+            
+            sqlite3_bind_text(updateStatement, 1, (name as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(updateStatement, 2, (description as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(updateStatement, 3, (category as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(updateStatement, 4, Int32(tempMin))
+            sqlite3_bind_int(updateStatement, 5, Int32(tempMax))
+            sqlite3_bind_text(updateStatement, 6, (image as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(updateStatement, 7, Int32(id))
+              
+            if sqlite3_step(updateStatement) == SQLITE_DONE {
+                print("Successfully inserted row.")
+            } else {
+                print("Could not insert row.")
+            }
+        } else {
+            print("INSERT statement could not be prepared.")
+        }
+        sqlite3_finalize(updateStatement)
+    }
       
     func read() -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes;"
@@ -103,9 +137,38 @@ class DBManager
                 let tempMax = sqlite3_column_int(queryStatement, 5)
                 let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
                 
-                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: image))
-                print("Query Result:")
-                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax) | \(image)")
+                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
+//                print("Query Result:")
+//                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax)")
+            }
+        } else {
+            print("SELECT statement could not be prepared")
+        }
+        sqlite3_finalize(queryStatement)
+        return clothes
+    }
+    
+    func selectByCategory(category: String) -> [Clothes] {
+        let queryStatementString = "SELECT * FROM Clothes WHERE category = ?;"
+        var queryStatement: OpaquePointer? = nil
+        var clothes : [Clothes] = []
+        
+        if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
+            sqlite3_bind_text(queryStatement, 1, (category as NSString).utf8String, -1, nil)
+            
+            while sqlite3_step(queryStatement) == SQLITE_ROW {
+                
+                let id = sqlite3_column_int(queryStatement, 0)
+                let name = String(describing: String(cString: sqlite3_column_text(queryStatement, 1)))
+                let description = String(describing: String(cString: sqlite3_column_text(queryStatement, 2)))
+                let category = String(describing: String(cString: sqlite3_column_text(queryStatement, 3)))
+                let tempMin = sqlite3_column_int(queryStatement, 4)
+                let tempMax = sqlite3_column_int(queryStatement, 5)
+                let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
+                
+                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
+//                print("Query Result:")
+//                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax)")
             }
         } else {
             print("SELECT statement could not be prepared")
@@ -114,7 +177,7 @@ class DBManager
         return clothes
     }
       
-    func deleteByID(id:Int) {
+    func deleteByID(id: Int) {
         let deleteStatementStirng = "DELETE FROM Clothes WHERE id = ?;"
         var deleteStatement: OpaquePointer? = nil
         if sqlite3_prepare_v2(db, deleteStatementStirng, -1, &deleteStatement, nil) == SQLITE_OK {
@@ -137,8 +200,12 @@ protocol AddNewClothesDelegate: AnyObject {
     func updateAllClothesTable()
 }
 
+protocol ShowClothesItemInfoDelegate: AnyObject {
+    func showClothesItemInfo(info: Clothes)
+}
 
-class ViewController: UIViewController, AddNewClothesDelegate {
+
+class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate {
     
     
     @IBOutlet weak var clothesTableView: UITableView!
@@ -167,6 +234,15 @@ class ViewController: UIViewController, AddNewClothesDelegate {
         self.clothesTableView.reloadData()
     }
     
+    func showClothesItemInfo(info: Clothes) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let clothesItemInfoVC = sb.instantiateViewController(withIdentifier: "ClothesItemInfoViewController") as! ClothesItemInfoViewController
+        clothesItemInfoVC.addNewClothesDelegate = self
+        
+        clothesItemInfoVC.uploadInfo(info: info)
+        navigationController?.pushViewController(clothesItemInfoVC, animated: true)
+        
+    }
     
     @IBAction func addClothesButtonPressed(_ sender: UIButton) {
         let sb = UIStoryboard(name: "Main", bundle: nil)
@@ -174,6 +250,41 @@ class ViewController: UIViewController, AddNewClothesDelegate {
         addClothesVC.addNewClothesDelegate = self
         
         navigationController?.pushViewController(addClothesVC, animated: true)
+    }
+    
+    func loadClothesTableByCategory(category: String) {
+        self.allClothes = dbConnection.selectByCategory(category: category)
+        self.clothesTableView.reloadData()
+    }
+    
+    
+    @IBAction func headClothesButtonPressed(_ sender: UIButton) {
+        loadClothesTableByCategory(category: "Голова")
+    }
+    
+    
+    @IBAction func jacketClothesButtonPressed(_ sender: UIButton) {
+        loadClothesTableByCategory(category: "Верхняя")
+    }
+    
+    
+    @IBAction func tshirtClothesButtonPressed(_ sender: UIButton) {
+        loadClothesTableByCategory(category: "Под верх")
+    }
+    
+    
+    @IBAction func trousersClothesButtonPressed(_ sender: UIButton) {
+        loadClothesTableByCategory(category: "Нижняя")
+    }
+    
+    
+    @IBAction func shoesClothesButtonPressed(_ sender: UIButton) {
+        loadClothesTableByCategory(category: "Обувь")
+    }
+    
+    
+    @IBAction func homeButtonPressed(_ sender: UIButton) {
+        self.updateAllClothesTable()
     }
     
 }
@@ -192,12 +303,10 @@ extension ViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MainClothesTableViewCell", for: indexPath) as! MainClothesTableViewCell
-//        cell.emptyCommentDelegate = self
+        cell.showClothesItemInfoDelegate = self
 
-        cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image)
+        cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image!)
 
         return cell
     }
 }
-
-

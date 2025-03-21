@@ -10,14 +10,13 @@ import UIKit
 
 class MainClothesTableViewCell: UITableViewCell {
     
-    
-    
     @IBOutlet weak var clothesSmalllImageView: UIImageView!
     @IBOutlet weak var clothesNameLabel: UILabel!
     @IBOutlet weak var clothesDescriptionLabel: UILabel!
     @IBOutlet weak var clothesTempLabel: UILabel!
     
-    var info: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: 1, image: "")
+    var info: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: 1, image: Data(base64Encoded: "")!)
+    weak var showClothesItemInfoDelegate: ShowClothesItemInfoDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -27,7 +26,7 @@ class MainClothesTableViewCell: UITableViewCell {
         super.init(coder: coder)
     }
     
-    func configure(id: Int, name: String, description: String, category: String, tempMin: Int, tempMax: Int, image: String) {
+    func configure(id: Int, name: String, description: String, category: String, tempMin: Int, tempMax: Int, image: Data) {
         self.info.id = id
         self.info.name = name
         self.info.description = description
@@ -50,10 +49,17 @@ class MainClothesTableViewCell: UITableViewCell {
             self.clothesSmalllImageView.image = UIImage(systemName: "jacket.fill")
         case "Под верх":
             self.clothesSmalllImageView.image = UIImage(systemName: "tshirt.fill")
+        case "Нижняя":
+            self.clothesSmalllImageView.image = UIImage(systemName: "figure.highintensity.intervaltraining")
         case "Обувь":
             self.clothesSmalllImageView.image = UIImage(systemName: "shoe.fill")
         default:
             self.clothesSmalllImageView.image = UIImage(systemName: "person.fill")
         }
+    }
+    
+    
+    @IBAction func showClothesItemInfoButtonPressed(_ sender: UIButton) {
+        self.showClothesItemInfoDelegate?.showClothesItemInfo(info: self.info)
     }
 }

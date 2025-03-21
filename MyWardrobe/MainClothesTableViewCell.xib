@@ -46,6 +46,9 @@
                         <color key="tintColor" red="0.28566919191919193" green="0.28566919191919193" blue="0.28566919191919193" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="plain" image="arrow.right" catalog="system"/>
+                        <connections>
+                            <action selector="showClothesItemInfoButtonPressed:" destination="6W5-hw-7WP" eventType="touchUpInside" id="Clq-Iq-Snz"/>
+                        </connections>
                     </button>
                 </subviews>
             </tableViewCellContentView>
