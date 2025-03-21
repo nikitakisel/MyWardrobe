@@ -61,6 +61,16 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
         }
         temps.reverse()
         
+        if !self.categories.isEmpty {
+            var defaultRow = 0
+            
+            if let elemIndex = self.categories.firstIndex(of: "Голова") {
+                defaultRow = elemIndex
+                self.category = "Голова"
+            }
+            self.categoryPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+        }
+        
         if !temps.isEmpty {
             var defaultRow = 0
             

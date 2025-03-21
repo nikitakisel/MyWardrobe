@@ -31,10 +31,10 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pZS-1k-iZ0">
-                                <rect key="frame" x="204" y="746" width="62" height="35"/>
+                                <rect key="frame" x="213" y="746" width="45" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" image="figure.core.training" catalog="system"/>
+                                <buttonConfiguration key="configuration" style="plain" image="figure.highintensity.intervaltraining" catalog="system"/>
                                 <connections>
                                     <action selector="trousersClothesButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="EZJ-z4-KJB"/>
                                 </connections>
@@ -284,7 +284,7 @@
     </scenes>
     <resources>
         <image name="checkmark" catalog="system" width="128" height="114"/>
-        <image name="figure.core.training" catalog="system" width="128" height="48"/>
+        <image name="figure.highintensity.intervaltraining" catalog="system" width="94" height="128"/>
         <image name="hanger" catalog="system" width="128" height="99"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="jacket" catalog="system" width="128" height="94"/>

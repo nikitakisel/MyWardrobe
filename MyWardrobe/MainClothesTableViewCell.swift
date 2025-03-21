@@ -49,6 +49,8 @@ class MainClothesTableViewCell: UITableViewCell {
             self.clothesSmalllImageView.image = UIImage(systemName: "jacket.fill")
         case "Под верх":
             self.clothesSmalllImageView.image = UIImage(systemName: "tshirt.fill")
+        case "Нижняя":
+            self.clothesSmalllImageView.image = UIImage(systemName: "figure.highintensity.intervaltraining")
         case "Обувь":
             self.clothesSmalllImageView.image = UIImage(systemName: "shoe.fill")
         default:
