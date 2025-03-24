@@ -29,6 +29,22 @@ struct Clothes {
 }
 
 
+struct Lookset {
+    var id: Int
+    var looksetName: String
+    var looksetDescription: String
+    var looksetTemp: Int
+    
+    var headId: Int
+    var jacketId: Int
+    var tshirtId: Int
+    var trousersId: Int
+    var shoesId: Int
+    
+    var creationTime: String
+}
+
+
 protocol AddNewClothesDelegate: AnyObject {
     func updateAllClothesTable()
 }
@@ -37,11 +53,11 @@ protocol ShowClothesItemInfoDelegate: AnyObject {
     func showClothesItemInfo(info: Clothes)
 }
 
-
 class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate {
     
     @IBOutlet weak var clothesTableView: UITableView!
     @IBOutlet weak var currentTempPickerView: UIPickerView!
+    @IBOutlet weak var saveLooksetButton: UIButton!
     
     var dbConnection = DBManager()
     var allClothes: [Clothes] = []
@@ -50,6 +66,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        saveLooksetButton.isHidden = true
         clothesTableView.delegate = self
         clothesTableView.dataSource = self
         
@@ -84,7 +101,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     }
     
     func updateAllClothesTable() {
-        self.allClothes = dbConnection.read()
+        self.allClothes = dbConnection.readClothes()
         self.clothesTableView.reloadData()
     }
     
@@ -95,7 +112,13 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         
         clothesItemInfoVC.uploadInfo(info: info)
         navigationController?.pushViewController(clothesItemInfoVC, animated: true)
-        
+    }
+    
+    
+    @IBAction func showCustomLooksetsButtonPressed(_ sender: UIButton) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let looksetVC = sb.instantiateViewController(withIdentifier: "LooksetViewController") as! LooksetViewController
+        navigationController?.pushViewController(looksetVC, animated: true)
     }
     
     @IBAction func addClothesButtonPressed(_ sender: UIButton) {
@@ -109,6 +132,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     func loadClothesTableByCategory(category: String) {
         self.allClothes = dbConnection.selectByCategory(category: category)
         self.clothesTableView.reloadData()
+        saveLooksetButton.isHidden = true
     }
     
     
@@ -139,12 +163,41 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     @IBAction func homeButtonPressed(_ sender: UIButton) {
         self.updateAllClothesTable()
+        saveLooksetButton.isHidden = true
     }
     
     
     @IBAction func diceButtonPressed(_ sender: UIButton) {
         self.allClothes = dbConnection.selectDice(currentTemp: self.currentTempValue)
         self.clothesTableView.reloadData()
+        saveLooksetButton.isHidden = false
+    }
+    
+    
+    @IBAction func saveDiceLooksetButtonPressed(_ sender: UIButton) {
+        var currentLookset = Lookset(id: -1, looksetName: "", looksetDescription: "", looksetTemp: self.currentTempValue, headId: -1, jacketId: -1, tshirtId: -1, trousersId: -1, shoesId: -1, creationTime: "")
+        for item in self.allClothes {
+        switch (item.category) {
+            case "Голова":
+                currentLookset.headId = item.id
+            case "Верхняя":
+                currentLookset.jacketId = item.id
+            case "Под верх":
+                currentLookset.tshirtId = item.id
+            case "Нижняя":
+                currentLookset.trousersId = item.id
+            default:
+                currentLookset.shoesId = item.id
+            }
+        }
+        
+        dbConnection.insertIntoLookset(looksetName: currentLookset.looksetName, looksetDescription: currentLookset.looksetDescription, looksetTemp: currentLookset.looksetTemp, headId: currentLookset.headId, jacketId: currentLookset.jacketId, tshirtId: currentLookset.tshirtId, trousersId: currentLookset.trousersId, shoesId: currentLookset.shoesId)
+        
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Успешно!", message: "Ващ стиль добавлен в гардероб", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
     }
 }
 

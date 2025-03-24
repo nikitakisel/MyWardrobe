@@ -169,10 +169,10 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
             let messageShow = isEditingModeOn ? "Информация обновлена!" : "Вещь добавлена в гардероб!"
             
             if isEditingModeOn == true {
-                dbConnection.update(id: self.postIdForEditing, name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
+                dbConnection.updateClothes(id: self.postIdForEditing, name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
                 self.uploadInfoDelegate?.uploadInfo(info: Clothes(id: self.postIdForEditing, name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData))
             } else {
-                dbConnection.insert(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
+                dbConnection.insertIntoClothes(name: name, description: self.descriptionTextField.text!, category: self.category, tempMin: self.tempMinValue, tempMax: self.tempMaxValue, image: self.imageData.base64EncodedString())
             }
             
             DispatchQueue.main.async {
