@@ -37,16 +37,6 @@
                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6jf-Yh-u2D">
-                        <rect key="frame" x="278" y="26" width="48" height="35"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <color key="tintColor" systemColor="systemRedColor"/>
-                        <state key="normal" title="Button"/>
-                        <buttonConfiguration key="configuration" style="plain" image="trash.slash" catalog="system"/>
-                        <connections>
-                            <action selector="deleteLooksetButtonPressed:" destination="sua-Ow-bri" eventType="touchUpInside" id="hhJ-uH-yiA"/>
-                        </connections>
-                    </button>
                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Krb-xI-sBY">
                         <rect key="frame" x="334" y="26" width="50" height="35"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -55,6 +45,22 @@
                         <buttonConfiguration key="configuration" style="plain" image="arrow.right" catalog="system"/>
                         <connections>
                             <action selector="showLooksetInfoButtonPressed:" destination="sua-Ow-bri" eventType="touchUpInside" id="bcW-l6-jYe"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p0r-Wf-au8">
+                        <rect key="frame" x="293" y="26" width="49" height="35"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <state key="normal" title="Button"/>
+                        <buttonConfiguration key="configuration" style="plain" image="pencil.line" catalog="system"/>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6jf-Yh-u2D">
+                        <rect key="frame" x="245" y="26" width="48" height="35"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <color key="tintColor" systemColor="systemRedColor"/>
+                        <state key="normal" title="Button"/>
+                        <buttonConfiguration key="configuration" style="plain" image="trash.slash" catalog="system"/>
+                        <connections>
+                            <action selector="deleteLooksetButtonPressed:" destination="sua-Ow-bri" eventType="touchUpInside" id="hhJ-uH-yiA"/>
                         </connections>
                     </button>
                 </subviews>
@@ -69,6 +75,7 @@
     </objects>
     <resources>
         <image name="arrow.right" catalog="system" width="128" height="95"/>
+        <image name="pencil.line" catalog="system" width="128" height="117"/>
         <image name="trash.slash" catalog="system" width="113" height="128"/>
         <systemColor name="systemRedColor">
             <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

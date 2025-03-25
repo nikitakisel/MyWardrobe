@@ -247,6 +247,35 @@ class DBManager
         return clothes
     }
     
+    func selectByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
+        let queryStatementString = "SELECT * FROM Clothes WHERE category = ? AND temp_min <= ? AND temp_max >= ?;"
+        var queryStatement: OpaquePointer? = nil
+        var clothes : [Clothes] = []
+        
+        if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
+            sqlite3_bind_text(queryStatement, 1, (category as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(queryStatement, 2, Int32(temp))
+            sqlite3_bind_int(queryStatement, 3, Int32(temp))
+            
+            while sqlite3_step(queryStatement) == SQLITE_ROW {
+                
+                let id = sqlite3_column_int(queryStatement, 0)
+                let name = String(describing: String(cString: sqlite3_column_text(queryStatement, 1)))
+                let description = String(describing: String(cString: sqlite3_column_text(queryStatement, 2)))
+                let category = String(describing: String(cString: sqlite3_column_text(queryStatement, 3)))
+                let tempMin = sqlite3_column_int(queryStatement, 4)
+                let tempMax = sqlite3_column_int(queryStatement, 5)
+                let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
+                
+                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
+            }
+        } else {
+            print("SELECT statement could not be prepared")
+        }
+        sqlite3_finalize(queryStatement)
+        return clothes
+    }
+    
     func selectClothesById(id: Int) -> Clothes {
         let queryStatementString = "SELECT * FROM Clothes WHERE id = ?;"
         var queryStatement: OpaquePointer? = nil

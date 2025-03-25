@@ -40,7 +40,7 @@ class LooksetTableViewCell: UITableViewCell {
         self.looksetInfo.shoesId = shoesId
         self.looksetInfo.creationTime = creationTime
         
-        self.setNameLabel.text = "Набор \(self.looksetInfo.id)"
+        self.setNameLabel.text = self.looksetInfo.looksetName == "" ? "Набор \(self.looksetInfo.id)" : self.looksetInfo.looksetName
         self.setTempLabel.text = "Рекомендовано при \(self.looksetInfo.looksetTemp)°C"
         self.setCreationTimeLabel.text = "Дата и время: \(self.looksetInfo.creationTime)"
     }

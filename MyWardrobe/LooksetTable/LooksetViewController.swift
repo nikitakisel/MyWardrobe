@@ -14,7 +14,12 @@ protocol DeleteLooksetDelegate: AnyObject {
 }
 
 
-class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelectedLooksetDelegate {
+protocol UpdateLooksetDelegate: AnyObject {
+    func updateLooksetTable()
+}
+
+
+class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelectedLooksetDelegate, UpdateLooksetDelegate {
     
     @IBOutlet weak var looksetTableView: UITableView!
     
@@ -37,6 +42,16 @@ class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelect
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
     }
+    
+    
+    @IBAction func addLooksetButtonPressed(_ sender: UIButton) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let addLooksetVC = sb.instantiateViewController(withIdentifier: "AddLooksetViewController") as! AddLooksetViewController
+        addLooksetVC.updateLooksetDelegate = self
+        
+        navigationController?.pushViewController(addLooksetVC, animated: true)
+    }
+    
     
     func updateLooksetTable() {
         self.allLookset = dbConnection.readLookset()
