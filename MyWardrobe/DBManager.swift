@@ -208,6 +208,18 @@ class DBManager
         return lookset
     }
     
+    func unpackLookset(looksetClass: Lookset) -> [Clothes] {
+        var unpackedLookset: [Clothes] = []
+        let clothesIndexes: [Int] = [looksetClass.headId, looksetClass.jacketId, looksetClass.tshirtId, looksetClass.trousersId, looksetClass.shoesId].filter { $0 != -1 }
+        print(clothesIndexes)
+        
+        for index in clothesIndexes {
+            unpackedLookset.append(selectClothesById(id: index))
+        }
+        
+        return unpackedLookset
+    }
+    
     func selectByCategory(category: String) -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes WHERE category = ?;"
         var queryStatement: OpaquePointer? = nil
@@ -227,6 +239,33 @@ class DBManager
                 let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
                 
                 clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
+            }
+        } else {
+            print("SELECT statement could not be prepared")
+        }
+        sqlite3_finalize(queryStatement)
+        return clothes
+    }
+    
+    func selectClothesById(id: Int) -> Clothes {
+        let queryStatementString = "SELECT * FROM Clothes WHERE id = ?;"
+        var queryStatement: OpaquePointer? = nil
+        var clothes: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: -1, image: Data(base64Encoded: "")!)
+        
+        if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
+            sqlite3_bind_int(queryStatement, 1, Int32(id))
+            
+            while sqlite3_step(queryStatement) == SQLITE_ROW {
+                
+                let id = sqlite3_column_int(queryStatement, 0)
+                let name = String(describing: String(cString: sqlite3_column_text(queryStatement, 1)))
+                let description = String(describing: String(cString: sqlite3_column_text(queryStatement, 2)))
+                let category = String(describing: String(cString: sqlite3_column_text(queryStatement, 3)))
+                let tempMin = sqlite3_column_int(queryStatement, 4)
+                let tempMax = sqlite3_column_int(queryStatement, 5)
+                let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
+                
+                clothes = Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!))
             }
         } else {
             print("SELECT statement could not be prepared")

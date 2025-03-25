@@ -14,6 +14,9 @@ class LooksetTableViewCell: UITableViewCell {
     @IBOutlet weak var setTempLabel: UILabel!
     @IBOutlet weak var setCreationTimeLabel: UILabel!
     
+    weak var deleteLooksetDelegate: DeleteLooksetDelegate?
+    weak var showSelectedLooksetDelegate: ShowSelectedLooksetDelegate?
+    
     var looksetInfo: Lookset = Lookset(id: -1, looksetName: "", looksetDescription: "", looksetTemp: 0, headId: -1, jacketId: -1, tshirtId: -1, trousersId: -1, shoesId: -1, creationTime: "")
     
     override func awakeFromNib() {
@@ -40,5 +43,15 @@ class LooksetTableViewCell: UITableViewCell {
         self.setNameLabel.text = "Набор \(self.looksetInfo.id)"
         self.setTempLabel.text = "Рекомендовано при \(self.looksetInfo.looksetTemp)°C"
         self.setCreationTimeLabel.text = "Дата и время: \(self.looksetInfo.creationTime)"
+    }
+    
+    
+    @IBAction func deleteLooksetButtonPressed(_ sender: UIButton) {
+        deleteLooksetDelegate?.offerToDeleteLooksetItem(id: self.looksetInfo.id)
+    }
+    
+    
+    @IBAction func showLooksetInfoButtonPressed(_ sender: UIButton) {
+        showSelectedLooksetDelegate?.showSelectedLookset(currentLookset: looksetInfo)
     }
 }

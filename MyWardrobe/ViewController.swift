@@ -53,7 +53,11 @@ protocol ShowClothesItemInfoDelegate: AnyObject {
     func showClothesItemInfo(info: Clothes)
 }
 
-class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate {
+protocol ShowSelectedLooksetDelegate: AnyObject {
+    func showSelectedLookset(currentLookset: Lookset)
+}
+
+class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate, ShowSelectedLooksetDelegate {
     
     @IBOutlet weak var clothesTableView: UITableView!
     @IBOutlet weak var currentTempPickerView: UIPickerView!
@@ -78,15 +82,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         }
         temps.reverse()
         
-        if !temps.isEmpty {
-            var defaultRow = 0
-            
-            if let elemIndex = temps.firstIndex(of: 25) {
-                defaultRow = elemIndex
-                self.currentTempValue = 25
-            }
-            self.currentTempPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-        }
+        setCurrentTemp(currentTemp: 25)
         
         let nib = UINib(nibName: "MainClothesTableViewCell", bundle: nil)
         clothesTableView.register(nib, forCellReuseIdentifier: "MainClothesTableViewCell")
@@ -98,6 +94,18 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+    
+    func setCurrentTemp(currentTemp: Int) {
+        if !temps.isEmpty {
+            var defaultRow = 0
+            
+            if let elemIndex = temps.firstIndex(of: currentTemp) {
+                defaultRow = elemIndex
+                self.currentTempValue = currentTemp
+            }
+            self.currentTempPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+        }
     }
     
     func updateAllClothesTable() {
@@ -114,10 +122,20 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         navigationController?.pushViewController(clothesItemInfoVC, animated: true)
     }
     
+    func showSelectedLookset(currentLookset: Lookset) {
+        self.allClothes = dbConnection.unpackLookset(looksetClass: currentLookset)
+        self.clothesTableView.reloadData()
+        
+        setCurrentTemp(currentTemp: currentLookset.looksetTemp)
+        saveLooksetButton.isHidden = true
+    }
+    
     
     @IBAction func showCustomLooksetsButtonPressed(_ sender: UIButton) {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let looksetVC = sb.instantiateViewController(withIdentifier: "LooksetViewController") as! LooksetViewController
+        looksetVC.showSelectedLooksetDelegate = self
+        
         navigationController?.pushViewController(looksetVC, animated: true)
     }
     
