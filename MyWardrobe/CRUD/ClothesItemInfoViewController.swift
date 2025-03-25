@@ -73,11 +73,11 @@ class ClothesItemInfoViewController: UIViewController, AddNewClothesDelegate, Up
     
     func deleteClothesItem() {
         let dbConnection = DBManager()
-        dbConnection.deleteByID(id: self.info.id)
+        dbConnection.deleteByIDFromClothes(id: self.info.id)
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Успешно", message: "Выбранная вещь удалена!", preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "Да", style: .default, handler: { [weak self] _ in
+            alert.addAction(UIAlertAction(title: "ОК", style: .default, handler: { [weak self] _ in
                 self?.addNewClothesDelegate?.updateAllClothesTable()
                 self?.navigationController?.popViewController(animated: true)
             }))
