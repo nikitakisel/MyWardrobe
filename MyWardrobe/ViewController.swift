@@ -123,7 +123,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     }
     
     func showSelectedLookset(currentLookset: Lookset) {
-        self.allClothes = dbConnection.unpackLookset(looksetClass: currentLookset)
+        self.allClothes = dbConnection.unpackLooksetToArray(looksetClass: currentLookset)
         self.clothesTableView.reloadData()
         
         setCurrentTemp(currentTemp: currentLookset.looksetTemp)

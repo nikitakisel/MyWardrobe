@@ -16,6 +16,7 @@ class LooksetTableViewCell: UITableViewCell {
     
     weak var deleteLooksetDelegate: DeleteLooksetDelegate?
     weak var showSelectedLooksetDelegate: ShowSelectedLooksetDelegate?
+    weak var editLooksetDelegate: EditLooksetDelegate?
     
     var looksetInfo: Lookset = Lookset(id: -1, looksetName: "", looksetDescription: "", looksetTemp: 0, headId: -1, jacketId: -1, tshirtId: -1, trousersId: -1, shoesId: -1, creationTime: "")
     
@@ -40,9 +41,14 @@ class LooksetTableViewCell: UITableViewCell {
         self.looksetInfo.shoesId = shoesId
         self.looksetInfo.creationTime = creationTime
         
-        self.setNameLabel.text = "Набор \(self.looksetInfo.id)"
+        self.setNameLabel.text = self.looksetInfo.looksetName == "" ? "Набор \(self.looksetInfo.id)" : self.looksetInfo.looksetName
         self.setTempLabel.text = "Рекомендовано при \(self.looksetInfo.looksetTemp)°C"
         self.setCreationTimeLabel.text = "Дата и время: \(self.looksetInfo.creationTime)"
+    }
+    
+    
+    @IBAction func editLooksetButtonPressed(_ sender: UIButton) {
+        editLooksetDelegate?.editCurrentLookset(currentLookset: looksetInfo)
     }
     
     

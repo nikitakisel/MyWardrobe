@@ -151,6 +151,33 @@ class DBManager
         }
         sqlite3_finalize(updateStatement)
     }
+    
+    func updateLookset(id: Int, looksetName: String, looksetDescription: String, looksetTemp: Int, headId: Int, jacketId: Int, tshirtId: Int, trousersId: Int, shoesId: Int) {
+        let updateStatementString = "UPDATE Lookset SET lookset_name = ?, lookset_description = ?, lookset_temp = ?, head_id = ?, jacket_id = ?, tshirt_id = ?, trousers_id = ?, shoes_id = ? WHERE id = ?;"
+        var updateStatement: OpaquePointer? = nil
+        if sqlite3_prepare_v2(db, updateStatementString, -1, &updateStatement, nil) == SQLITE_OK {
+            
+            sqlite3_bind_text(updateStatement, 1, (looksetName as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(updateStatement, 2, (looksetDescription as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(updateStatement, 3, Int32(looksetTemp))
+            sqlite3_bind_int(updateStatement, 4, Int32(headId))
+            sqlite3_bind_int(updateStatement, 5, Int32(jacketId))
+            sqlite3_bind_int(updateStatement, 6, Int32(tshirtId))
+            sqlite3_bind_int(updateStatement, 7, Int32(trousersId))
+            sqlite3_bind_int(updateStatement, 8, Int32(shoesId))
+            sqlite3_bind_int(updateStatement, 9, Int32(id))
+              
+            if sqlite3_step(updateStatement) == SQLITE_DONE {
+                print("Successfully inserted row.")
+            } else {
+                print("Could not insert row.")
+            }
+        } else {
+            print("INSERT statement could not be prepared.")
+        }
+        sqlite3_finalize(updateStatement)
+    }
+    
       
     func readClothes() -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes;"
@@ -208,10 +235,9 @@ class DBManager
         return lookset
     }
     
-    func unpackLookset(looksetClass: Lookset) -> [Clothes] {
+    func unpackLooksetToArray(looksetClass: Lookset) -> [Clothes] {
         var unpackedLookset: [Clothes] = []
         let clothesIndexes: [Int] = [looksetClass.headId, looksetClass.jacketId, looksetClass.tshirtId, looksetClass.trousersId, looksetClass.shoesId].filter { $0 != -1 }
-        print(clothesIndexes)
         
         for index in clothesIndexes {
             unpackedLookset.append(selectClothesById(id: index))
@@ -227,6 +253,35 @@ class DBManager
         
         if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
             sqlite3_bind_text(queryStatement, 1, (category as NSString).utf8String, -1, nil)
+            
+            while sqlite3_step(queryStatement) == SQLITE_ROW {
+                
+                let id = sqlite3_column_int(queryStatement, 0)
+                let name = String(describing: String(cString: sqlite3_column_text(queryStatement, 1)))
+                let description = String(describing: String(cString: sqlite3_column_text(queryStatement, 2)))
+                let category = String(describing: String(cString: sqlite3_column_text(queryStatement, 3)))
+                let tempMin = sqlite3_column_int(queryStatement, 4)
+                let tempMax = sqlite3_column_int(queryStatement, 5)
+                let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
+                
+                clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
+            }
+        } else {
+            print("SELECT statement could not be prepared")
+        }
+        sqlite3_finalize(queryStatement)
+        return clothes
+    }
+    
+    func selectByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
+        let queryStatementString = "SELECT * FROM Clothes WHERE category = ? AND temp_min <= ? AND temp_max >= ?;"
+        var queryStatement: OpaquePointer? = nil
+        var clothes : [Clothes] = []
+        
+        if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
+            sqlite3_bind_text(queryStatement, 1, (category as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(queryStatement, 2, Int32(temp))
+            sqlite3_bind_int(queryStatement, 3, Int32(temp))
             
             while sqlite3_step(queryStatement) == SQLITE_ROW {
                 
