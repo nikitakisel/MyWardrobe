@@ -13,13 +13,16 @@ protocol DeleteLooksetDelegate: AnyObject {
     func offerToDeleteLooksetItem(id: Int)
 }
 
-
 protocol UpdateLooksetDelegate: AnyObject {
     func updateLooksetTable()
 }
 
+protocol EditLooksetDelegate: AnyObject {
+    func editCurrentLookset(currentLookset: Lookset)
+}
 
-class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelectedLooksetDelegate, UpdateLooksetDelegate {
+
+class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelectedLooksetDelegate, UpdateLooksetDelegate, EditLooksetDelegate {
     
     @IBOutlet weak var looksetTableView: UITableView!
     
@@ -87,6 +90,15 @@ class LooksetViewController: UIViewController, DeleteLooksetDelegate, ShowSelect
         showSelectedLooksetDelegate?.showSelectedLookset(currentLookset: currentLookset)
         navigationController?.popViewController(animated: true)
     }
+    
+    func editCurrentLookset(currentLookset: Lookset) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let addLooksetVC = sb.instantiateViewController(withIdentifier: "AddLooksetViewController") as! AddLooksetViewController
+        addLooksetVC.updateLooksetDelegate = self
+        
+        addLooksetVC.startLooksetEditing(lookset: currentLookset)
+        navigationController?.pushViewController(addLooksetVC, animated: true)
+    }
 }
 
 extension LooksetViewController: UITableViewDelegate {
@@ -104,6 +116,7 @@ extension LooksetViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "LooksetTableViewCell", for: indexPath) as! LooksetTableViewCell
         cell.deleteLooksetDelegate = self
         cell.showSelectedLooksetDelegate = self
+        cell.editLooksetDelegate = self
 
         cell.configure(id: allLookset[indexPath.row].id, looksetName: allLookset[indexPath.row].looksetName, looksetDescription: allLookset[indexPath.row].looksetDescription, looksetTemp: allLookset[indexPath.row].looksetTemp, headId: allLookset[indexPath.row].headId, jacketId: allLookset[indexPath.row].jacketId, tshirtId: allLookset[indexPath.row].tshirtId, trousersId: allLookset[indexPath.row].trousersId, shoesId: allLookset[indexPath.row].shoesId, creationTime: allLookset[indexPath.row].creationTime)
 

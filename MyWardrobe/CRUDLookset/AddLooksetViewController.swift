@@ -35,10 +35,13 @@ class AddLooksetViewController: UIViewController, UINavigationControllerDelegate
     var currentTempValue: Int = -1
     var looksetDict: [String: Int] = [:]
     
+    var isEditingModeOn: Bool = false
+    var editedLooksetId: Int = -1
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        addLooksetVCTitle.text = "Новый стиль"
         selectedTempPickerView.dataSource = self
         selectedTempPickerView.delegate = self
         
@@ -83,8 +86,30 @@ class AddLooksetViewController: UIViewController, UINavigationControllerDelegate
         }
     }
     
+    func startLooksetEditing(lookset: Lookset) {
+        self.isEditingModeOn = true
+        self.editedLooksetId = lookset.id
+        let unpackedLooksetArray: [Clothes] = dbConnection.unpackLooksetToArray(looksetClass: lookset)
+        
+        for item in unpackedLooksetArray {
+            self.looksetDict[item.category] = item.id
+            self.setTitleForClothesInLookset(clothesItem: item)
+        }
+        
+        DispatchQueue.main.async {
+            self.addLooksetVCTitle.text = "Изменить стиль"
+            self.looksetNameTextField.text = lookset.looksetName
+            self.looksetDescriptionTextField.text = lookset.looksetDescription
+            self.setCurrentTemp(currentTemp: lookset.looksetTemp)
+        }
+    }
+    
     func addClothesForLooksetDelegate(clothesItem: Clothes) {
         self.looksetDict[clothesItem.category] = clothesItem.id
+        setTitleForClothesInLookset(clothesItem: clothesItem)
+    }
+    
+    func setTitleForClothesInLookset(clothesItem: Clothes) {
         DispatchQueue.main.async {
             switch (clothesItem.category) {
             case "Голова":
@@ -124,10 +149,21 @@ class AddLooksetViewController: UIViewController, UINavigationControllerDelegate
     
     
     @IBAction func addLooksetButtonPressed(_ sender: UIButton) {
+        self.isEditingModeOn ? updateLookset() : addLookset()
+        self.alert(message: self.isEditingModeOn ? "Ваш стиль обновлён" : "Новый стиль добавлен в гардероб")
+    }
+    
+    func addLookset() {
         dbConnection.insertIntoLookset(looksetName: self.looksetNameTextField.text ?? "", looksetDescription: self.looksetDescriptionTextField.text ?? "", looksetTemp: self.currentTempValue, headId: self.looksetDict["Голова"] ?? -1, jacketId: self.looksetDict["Верхняя"] ?? -1, tshirtId: self.looksetDict["Под верх"] ?? -1, trousersId: self.looksetDict["Нижняя"] ?? -1, shoesId: self.looksetDict["Обувь"] ?? -1)
-        
+    }
+    
+    func updateLookset() {
+        dbConnection.updateLookset(id: self.editedLooksetId, looksetName: self.looksetNameTextField.text ?? "", looksetDescription: self.looksetDescriptionTextField.text ?? "", looksetTemp: self.currentTempValue, headId: self.looksetDict["Голова"] ?? -1, jacketId: self.looksetDict["Верхняя"] ?? -1, tshirtId: self.looksetDict["Под верх"] ?? -1, trousersId: self.looksetDict["Нижняя"] ?? -1, shoesId: self.looksetDict["Обувь"] ?? -1)
+    }
+    
+    func alert(message: String) {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Успешно!", message: "Новый стиль добавлен в гардероб", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Успешно!", message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
                 self?.navigationController?.popViewController(animated: true)
                 self?.updateLooksetDelegate?.updateLooksetTable()
@@ -151,8 +187,6 @@ class AddLooksetViewController: UIViewController, UINavigationControllerDelegate
         self.looksetNameTextField.text = ""
         self.looksetDescriptionTextField.text = ""
     }
-    
-    
 }
 
 

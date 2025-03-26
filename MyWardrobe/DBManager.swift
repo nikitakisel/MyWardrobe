@@ -151,6 +151,33 @@ class DBManager
         }
         sqlite3_finalize(updateStatement)
     }
+    
+    func updateLookset(id: Int, looksetName: String, looksetDescription: String, looksetTemp: Int, headId: Int, jacketId: Int, tshirtId: Int, trousersId: Int, shoesId: Int) {
+        let updateStatementString = "UPDATE Lookset SET lookset_name = ?, lookset_description = ?, lookset_temp = ?, head_id = ?, jacket_id = ?, tshirt_id = ?, trousers_id = ?, shoes_id = ? WHERE id = ?;"
+        var updateStatement: OpaquePointer? = nil
+        if sqlite3_prepare_v2(db, updateStatementString, -1, &updateStatement, nil) == SQLITE_OK {
+            
+            sqlite3_bind_text(updateStatement, 1, (looksetName as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(updateStatement, 2, (looksetDescription as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(updateStatement, 3, Int32(looksetTemp))
+            sqlite3_bind_int(updateStatement, 4, Int32(headId))
+            sqlite3_bind_int(updateStatement, 5, Int32(jacketId))
+            sqlite3_bind_int(updateStatement, 6, Int32(tshirtId))
+            sqlite3_bind_int(updateStatement, 7, Int32(trousersId))
+            sqlite3_bind_int(updateStatement, 8, Int32(shoesId))
+            sqlite3_bind_int(updateStatement, 9, Int32(id))
+              
+            if sqlite3_step(updateStatement) == SQLITE_DONE {
+                print("Successfully inserted row.")
+            } else {
+                print("Could not insert row.")
+            }
+        } else {
+            print("INSERT statement could not be prepared.")
+        }
+        sqlite3_finalize(updateStatement)
+    }
+    
       
     func readClothes() -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes;"
@@ -208,10 +235,9 @@ class DBManager
         return lookset
     }
     
-    func unpackLookset(looksetClass: Lookset) -> [Clothes] {
+    func unpackLooksetToArray(looksetClass: Lookset) -> [Clothes] {
         var unpackedLookset: [Clothes] = []
         let clothesIndexes: [Int] = [looksetClass.headId, looksetClass.jacketId, looksetClass.tshirtId, looksetClass.trousersId, looksetClass.shoesId].filter { $0 != -1 }
-        print(clothesIndexes)
         
         for index in clothesIndexes {
             unpackedLookset.append(selectClothesById(id: index))
