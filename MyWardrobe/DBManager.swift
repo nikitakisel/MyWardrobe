@@ -393,20 +393,32 @@ class DBManager
         sqlite3_finalize(deleteStatement)
     }
     
+    func clearTableClothes() {
+        clearOrDropTable(statement: "DELETE FROM Clothes;")
+    }
+    
+    func clearTableLookset() {
+        clearOrDropTable(statement: "DELETE FROM Lookset;")
+    }
+    
     func dropTableLookset() {
-        let dropTableString = "DROP TABLE Lookset;"
-        var dropTableStatement: OpaquePointer? = nil
-        if sqlite3_prepare_v2(db, dropTableString, -1, &dropTableStatement, nil) == SQLITE_OK
+        clearOrDropTable(statement: "DROP TABLE Lookset;")
+    }
+    
+    func clearOrDropTable(statement: String) {
+        let clearOrDropTableString = statement
+        var clearOrDropTableStatement: OpaquePointer? = nil
+        if sqlite3_prepare_v2(db, clearOrDropTableString, -1, &clearOrDropTableStatement, nil) == SQLITE_OK
         {
-            if sqlite3_step(dropTableStatement) == SQLITE_DONE
+            if sqlite3_step(clearOrDropTableStatement) == SQLITE_DONE
             {
-                print("look table dropped.")
+                print("current table cleared or dropped.")
             } else {
-                print("look table could not be dropped.")
+                print("current table could not be cleared or dropped.")
             }
         } else {
-            print("DROP TABLE statement could not be prepared.")
+            print("DELETE FROM/DROP TABLE statement could not be prepared.")
         }
-        sqlite3_finalize(dropTableStatement)
+        sqlite3_finalize(clearOrDropTableStatement)
     }
 }

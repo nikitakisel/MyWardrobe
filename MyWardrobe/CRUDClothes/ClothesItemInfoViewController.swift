@@ -34,7 +34,7 @@ class ClothesItemInfoViewController: UIViewController, AddNewClothesDelegate, Up
     
     func uploadInfo(info: Clothes) {
         DispatchQueue.main.async {
-            self.info.copy(info)
+            self.info = info
             self.clothesItemNameLabel.text = self.info.name
             self.clothesItemDescriptionLabel.text = self.info.description
             self.clothesItemTempsLabel.text = "Температура: от \(self.info.tempMin)°C до \(self.info.tempMax)°C"
