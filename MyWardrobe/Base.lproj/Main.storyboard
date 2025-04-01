@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="0Xv-9w-t4d">
-                                <rect key="frame" x="0.0" y="132" width="393" height="609"/>
+                                <rect key="frame" x="0.0" y="165" width="393" height="576"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             </tableView>
@@ -103,7 +103,7 @@
                                 </connections>
                             </button>
                             <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vy9-se-Bmv">
-                                <rect key="frame" x="0.0" y="77" width="152" height="59"/>
+                                <rect key="frame" x="0.0" y="77" width="152" height="80"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </pickerView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dWB-mf-SdG">
@@ -113,6 +113,24 @@
                                 <buttonConfiguration key="configuration" style="plain" image="square.and.arrow.down" catalog="system"/>
                                 <connections>
                                     <action selector="saveDiceLooksetButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ikr-if-aNw"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j2X-gN-y98">
+                                <rect key="frame" x="278" y="122" width="54" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="square.and.arrow.down.on.square" catalog="system"/>
+                                <connections>
+                                    <action selector="saveDataButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qag-xC-SWH"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D9J-eD-OLY">
+                                <rect key="frame" x="330" y="122" width="54" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="square.and.arrow.up.on.square" catalog="system"/>
+                                <connections>
+                                    <action selector="uploadDataButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fAP-E0-qax"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -479,10 +497,10 @@
                     </view>
                     <navigationItem key="navigationItem" title="Сведения" id="upA-up-Cwc"/>
                     <connections>
-                        <outlet property="clothesItemDescriptionLabel" destination="eEE-6d-ec3" id="ZXL-I6-3A2"/>
-                        <outlet property="clothesItemImageView" destination="Guu-Xf-wvR" id="aIW-EI-XHQ"/>
-                        <outlet property="clothesItemNameLabel" destination="qVP-C1-IfJ" id="PdQ-Kz-dqI"/>
-                        <outlet property="clothesItemTempsLabel" destination="bmI-IT-Hiy" id="S3O-Xk-475"/>
+                        <outlet property="clothesItemDescriptionLabel" destination="eEE-6d-ec3" id="eWx-p2-naH"/>
+                        <outlet property="clothesItemImageView" destination="Guu-Xf-wvR" id="UUY-HK-otY"/>
+                        <outlet property="clothesItemNameLabel" destination="qVP-C1-IfJ" id="Pou-jZ-rxl"/>
+                        <outlet property="clothesItemTempsLabel" destination="bmI-IT-Hiy" id="EtS-5t-54c"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="N7a-Rr-8iH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -522,6 +540,8 @@
         <image name="shoe" catalog="system" width="128" height="61"/>
         <image name="shoe.fill" catalog="system" width="128" height="61"/>
         <image name="square.and.arrow.down" catalog="system" width="112" height="128"/>
+        <image name="square.and.arrow.down.on.square" catalog="system" width="116" height="128"/>
+        <image name="square.and.arrow.up.on.square" catalog="system" width="113" height="128"/>
         <image name="sunglasses" catalog="system" width="128" height="48"/>
         <image name="sunglasses.fill" catalog="system" width="128" height="48"/>
         <image name="trash" catalog="system" width="117" height="128"/>
@@ -531,10 +551,10 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray6Color">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

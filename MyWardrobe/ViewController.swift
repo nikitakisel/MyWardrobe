@@ -6,9 +6,10 @@
 //
 
 import UIKit
+import UniformTypeIdentifiers
 
 
-struct Clothes {
+struct Clothes: Codable {
     var id: Int
     var name: String
     var description: String
@@ -16,20 +17,10 @@ struct Clothes {
     var tempMin: Int
     var tempMax: Int
     var image: Data?
-    
-    mutating func copy(_ obj: Clothes) {
-        self.id = obj.id
-        self.name = obj.name
-        self.description = obj.description
-        self.category = obj.category
-        self.tempMin = obj.tempMin
-        self.tempMax = obj.tempMax
-        self.image = obj.image
-    }
 }
 
 
-struct Lookset {
+struct Lookset: Codable {
     var id: Int
     var looksetName: String
     var looksetDescription: String
@@ -45,6 +36,12 @@ struct Lookset {
 }
 
 
+struct JsonData: Codable {
+    let clothes: [Clothes]
+    let looksets: [Lookset]
+}
+
+
 protocol AddNewClothesDelegate: AnyObject {
     func updateAllClothesTable()
 }
@@ -57,7 +54,7 @@ protocol ShowSelectedLooksetDelegate: AnyObject {
     func showSelectedLookset(currentLookset: Lookset)
 }
 
-class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate, ShowSelectedLooksetDelegate {
+class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate, ShowSelectedLooksetDelegate, UIDocumentPickerDelegate {
     
     @IBOutlet weak var clothesTableView: UITableView!
     @IBOutlet weak var currentTempPickerView: UIPickerView!
@@ -67,6 +64,11 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     var allClothes: [Clothes] = []
     var temps: [Int] = []
     var currentTempValue = 25
+    
+    //!!!!!!!
+    var importedFilename: String = ""
+    var exportedFilename: String = ""
+    //!!!!!!!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -118,6 +120,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         let clothesItemInfoVC = sb.instantiateViewController(withIdentifier: "ClothesItemInfoViewController") as! ClothesItemInfoViewController
         clothesItemInfoVC.addNewClothesDelegate = self
         
+        sleep(1)
         clothesItemInfoVC.uploadInfo(info: info)
         navigationController?.pushViewController(clothesItemInfoVC, animated: true)
     }
@@ -152,6 +155,122 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         self.clothesTableView.reloadData()
         saveLooksetButton.isHidden = true
     }
+    
+    
+    @IBAction func saveDataButtonPressed(_ sender: UIButton) {
+        do {
+            let jsonData = JsonData(clothes: dbConnection.readClothes(), looksets: dbConnection.readLookset())
+                let encoder = JSONEncoder()
+                let data = try encoder.encode(jsonData)
+
+                let tempDirURL = FileManager.default.temporaryDirectory
+                let tempFileURL = tempDirURL.appendingPathComponent("data.json")
+                try data.write(to: tempFileURL)
+
+                let activityViewController = UIActivityViewController(activityItems: [tempFileURL], applicationActivities: nil)
+                present(activityViewController, animated: true) {
+                    
+                    if let url = activityViewController.value(forKey: "activityItemsConfiguration") as? URL {  // Try to get the URL
+                        self.exportedFilename = url.lastPathComponent  // Set the filename
+                    } else {
+                        self.exportedFilename = "Отменено пользователем"  // Indicate it was cancelled
+                    }
+                }
+            self.alert(message: "Данные экспортированы")
+
+
+            } catch {
+                print("Ошибка сериализации или записи в файл: \(error)")
+                exportedFilename = "Ошибка экспорта"
+        }
+    }
+    
+    
+    @IBAction func uploadDataButtonPressed(_ sender: UIButton) {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.json], asCopy: true)
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true, completion: nil)
+    }
+    
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let selectedFileURL = urls.first else {
+            importedFilename = "Ошибка: Файл не выбран"
+            return
+        }
+
+        do {
+            // 2. Проверяем, доступен ли файл
+            let isSecuredURL = selectedFileURL.startAccessingSecurityScopedResource()
+
+            // 3. Считываем данные из файла JSON
+            let data = try Data(contentsOf: selectedFileURL)
+            let decoder = JSONDecoder()
+
+            do {
+                let jsonData = try decoder.decode(JsonData.self, from: data)
+
+                dbConnection.clearTableClothes()
+                dbConnection.clearTableLookset()
+
+                for item in jsonData.clothes {
+                    dbConnection.insertIntoClothes(name: item.name, description: item.description, category: item.category, tempMin: item.tempMin, tempMax: item.tempMax, image: item.image!.base64EncodedString())
+                }
+
+                for item in jsonData.looksets {
+                    dbConnection.insertIntoLookset(looksetName: item.looksetName, looksetDescription: item.looksetDescription, looksetTemp: item.looksetTemp, headId: item.headId, jacketId: item.jacketId, tshirtId: item.tshirtId, trousersId: item.trousersId, shoesId: item.shoesId)
+                }
+
+                // Stop accessing the resource:
+                if isSecuredURL {
+                    selectedFileURL.stopAccessingSecurityScopedResource()
+                }
+
+                // 5. Обновляем UI
+                importedFilename = selectedFileURL.lastPathComponent // Set the filename.
+                self.alert(message: "Данные импортированы")
+
+            } catch let decodingError as DecodingError {
+                // Обработка ошибки десериализации JSON
+                print("Ошибка десериализации JSON: \(decodingError)")
+                importedFilename = "Ошибка: Неправильный формат файла JSON"
+                handleDecodingError(decodingError) // Вызываем функцию для детальной обработки ошибки
+                self.error(message: "Неправильный формат файла JSON")
+            } catch {
+                // Обработка других ошибок (например, ошибка чтения файла)
+                print("Ошибка чтения файла: \(error)")
+                importedFilename = "Ошибка импорта"
+                self.error(message: "Ошибка чтения файла")
+            }
+        } catch {
+            print("Ошибка чтения или десериализации файла: \(error)")
+            importedFilename = "Ошибка импорта"
+            self.error(message: "Ошибка чтения или десериализации файла")
+        }
+    }
+
+    // Функция для детальной обработки ошибок десериализации
+    func handleDecodingError(_ error: DecodingError) {
+        switch error {
+        case .typeMismatch(let type, let context):
+            print("Type mismatch: \(type) mismatch, codingPath: \(context.codingPath), debugDescription: \(context.debugDescription)")
+        case .valueNotFound(let type, let context):
+            print("Value not found: \(type) not found, codingPath: \(context.codingPath), debugDescription: \(context.debugDescription)")
+        case .keyNotFound(let key, let context):
+            print("Key not found: \(key) not found, codingPath: \(context.codingPath), debugDescription: \(context.debugDescription)")
+        case .dataCorrupted(let context):
+            print("Data corrupted: codingPath: \(context.codingPath), debugDescription: \(context.debugDescription)")
+        @unknown default:
+            print("Unknown decoding error")
+        }
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        controller.dismiss(animated: true, completion: nil)
+        importedFilename = "Импорт отменен пользователем"
+    }
+
     
     
     @IBAction func headClothesButtonPressed(_ sender: UIButton) {
@@ -212,8 +331,28 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         dbConnection.insertIntoLookset(looksetName: currentLookset.looksetName, looksetDescription: currentLookset.looksetDescription, looksetTemp: currentLookset.looksetTemp, headId: currentLookset.headId, jacketId: currentLookset.jacketId, tshirtId: currentLookset.tshirtId, trousersId: currentLookset.trousersId, shoesId: currentLookset.shoesId)
         
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Успешно!", message: "Ващ стиль добавлен в гардероб", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Успешно!", message: "Ваш стиль добавлен в гардероб", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    
+    func alert(message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Успешно!", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
+                self?.updateAllClothesTable()
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    
+    func error(message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Ошибка!", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
     }
