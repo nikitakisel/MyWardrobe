@@ -57,6 +57,7 @@ protocol ShowSelectedLooksetDelegate: AnyObject {
 class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemInfoDelegate, ShowSelectedLooksetDelegate, UIDocumentPickerDelegate {
     
     @IBOutlet weak var clothesTableView: UITableView!
+    @IBOutlet weak var clothesWithImageTableView: UITableView!
     @IBOutlet weak var currentTempPickerView: UIPickerView!
     @IBOutlet weak var saveLooksetButton: UIButton!
     
@@ -64,6 +65,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     var allClothes: [Clothes] = []
     var temps: [Int] = []
     var currentTempValue = 25
+    var isClothesWithImageTableViewActivated = false
     
     //!!!!!!!
     var importedFilename: String = ""
@@ -73,8 +75,12 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     override func viewDidLoad() {
         super.viewDidLoad()
         saveLooksetButton.isHidden = true
+        
         clothesTableView.delegate = self
         clothesTableView.dataSource = self
+        
+        clothesWithImageTableView.dataSource = self
+        clothesWithImageTableView.delegate = self
         
         currentTempPickerView.dataSource = self
         currentTempPickerView.delegate = self
@@ -86,8 +92,15 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         
         setCurrentTemp(currentTemp: 25)
         
-        let nib = UINib(nibName: "MainClothesTableViewCell", bundle: nil)
-        clothesTableView.register(nib, forCellReuseIdentifier: "MainClothesTableViewCell")
+        let clothesTableViewNib = UINib(nibName: "MainClothesTableViewCell", bundle: nil)
+        clothesTableView.register(clothesTableViewNib, forCellReuseIdentifier: "MainClothesTableViewCell")
+        
+        let clothesWithImageTableViewNib = UINib(nibName: "ImageClothesTableViewCell", bundle: nil)
+        clothesWithImageTableView.register(clothesWithImageTableViewNib, forCellReuseIdentifier: "ImageClothesTableViewCell")
+        
+        self.clothesWithImageTableView.isHidden = true
+        self.clothesTableView.tag = 1
+        self.clothesWithImageTableView.tag = 2
         
         updateAllClothesTable()
 
@@ -113,6 +126,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     func updateAllClothesTable() {
         self.allClothes = dbConnection.readClothes()
         self.clothesTableView.reloadData()
+        self.clothesWithImageTableView.reloadData()
     }
     
     func showClothesItemInfo(info: Clothes) {
@@ -338,6 +352,19 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     }
     
     
+    @IBAction func swapTableViewsButtonPressed(_ sender: UIButton) {
+        if self.isClothesWithImageTableViewActivated == false {
+            self.clothesTableView.isHidden = true
+            self.clothesWithImageTableView.isHidden = false
+            self.isClothesWithImageTableViewActivated = true
+        } else {
+            self.clothesTableView.isHidden = false
+            self.clothesWithImageTableView.isHidden = true
+            self.isClothesWithImageTableViewActivated = false
+        }
+    }
+    
+    
     func alert(message: String) {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Успешно!", message: message, preferredStyle: .alert)
@@ -361,7 +388,11 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
 
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80.0
+        if tableView.tag == 1 {
+            return 80.0
+        } else {
+            return 260.0
+        }
     }
 }
 
@@ -371,12 +402,23 @@ extension ViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MainClothesTableViewCell", for: indexPath) as! MainClothesTableViewCell
-        cell.showClothesItemInfoDelegate = self
+        
+        if tableView.tag == 1 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MainClothesTableViewCell", for: indexPath) as! MainClothesTableViewCell
+            cell.showClothesItemInfoDelegate = self
 
-        cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image!)
+            cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image!)
 
-        return cell
+            return cell
+            
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ImageClothesTableViewCell", for: indexPath) as! ImageClothesTableViewCell
+            cell.showClothesItemInfoDelegate = self
+
+            cell.configure(id: allClothes[indexPath.row].id, name: allClothes[indexPath.row].name, description: allClothes[indexPath.row].description, category: allClothes[indexPath.row].category, tempMin: allClothes[indexPath.row].tempMin, tempMax: allClothes[indexPath.row].tempMax, image: allClothes[indexPath.row].image!)
+
+            return cell
+        }
     }
 }
 
