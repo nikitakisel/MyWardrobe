@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="0Xv-9w-t4d">
-                                <rect key="frame" x="0.0" y="165" width="393" height="576"/>
+                                <rect key="frame" x="0.0" y="176" width="393" height="565"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             </tableView>
@@ -67,7 +67,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0jc-fh-c4l">
-                                <rect key="frame" x="276" y="89" width="56" height="35"/>
+                                <rect key="frame" x="273" y="89" width="56" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="hanger" catalog="system"/>
@@ -116,7 +116,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j2X-gN-y98">
-                                <rect key="frame" x="278" y="122" width="54" height="35"/>
+                                <rect key="frame" x="275" y="133" width="54" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="square.and.arrow.down.on.square" catalog="system"/>
@@ -125,7 +125,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D9J-eD-OLY">
-                                <rect key="frame" x="330" y="122" width="54" height="35"/>
+                                <rect key="frame" x="330" y="133" width="54" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="square.and.arrow.up.on.square" catalog="system"/>
@@ -133,6 +133,20 @@
                                     <action selector="uploadDataButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fAP-E0-qax"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f8c-Up-cFJ">
+                                <rect key="frame" x="218" y="133" width="50" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="arrow.trianglehead.2.counterclockwise.rotate.90" catalog="system"/>
+                                <connections>
+                                    <action selector="swapTableViewsButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XIU-ID-5xe"/>
+                                </connections>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="XQD-0K-Pjy">
+                                <rect key="frame" x="0.0" y="176" width="393" height="564"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemGray6Color"/>
@@ -140,6 +154,7 @@
                     <navigationItem key="navigationItem" title="Главная" id="2Dt-NF-Omg"/>
                     <connections>
                         <outlet property="clothesTableView" destination="0Xv-9w-t4d" id="jjd-uI-Mbv"/>
+                        <outlet property="clothesWithImageTableView" destination="XQD-0K-Pjy" id="PiF-Zh-EPP"/>
                         <outlet property="currentTempPickerView" destination="vy9-se-Bmv" id="Q7i-WD-CXd"/>
                         <outlet property="saveLooksetButton" destination="dWB-mf-SdG" id="uET-z7-kJv"/>
                     </connections>
@@ -527,6 +542,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="arrow.trianglehead.2.counterclockwise.rotate.90" catalog="system" width="128" height="117"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>
         <image name="dice" catalog="system" width="128" height="116"/>
         <image name="figure.highintensity.intervaltraining" catalog="system" width="94" height="128"/>

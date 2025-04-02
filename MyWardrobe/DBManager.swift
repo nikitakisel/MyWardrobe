@@ -196,8 +196,6 @@ class DBManager
                 let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
                 
                 clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
-//                print("Query Result:")
-//                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax)")
             }
         } else {
             print("SELECT statement could not be prepared")
@@ -240,13 +238,16 @@ class DBManager
         let clothesIndexes: [Int] = [looksetClass.headId, looksetClass.jacketId, looksetClass.tshirtId, looksetClass.trousersId, looksetClass.shoesId].filter { $0 != -1 }
         
         for index in clothesIndexes {
-            unpackedLookset.append(selectClothesById(id: index))
+            let currentClothes = selectClothesById(id: index)
+            if currentClothes.id != -1 {
+                unpackedLookset.append(currentClothes)
+            }
         }
         
         return unpackedLookset
     }
     
-    func selectByCategory(category: String) -> [Clothes] {
+    func selectClothesByCategory(category: String) -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes WHERE category = ?;"
         var queryStatement: OpaquePointer? = nil
         var clothes : [Clothes] = []
@@ -273,7 +274,7 @@ class DBManager
         return clothes
     }
     
-    func selectByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
+    func selectClothesByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes WHERE category = ? AND temp_min <= ? AND temp_max >= ?;"
         var queryStatement: OpaquePointer? = nil
         var clothes : [Clothes] = []
@@ -305,7 +306,7 @@ class DBManager
     func selectClothesById(id: Int) -> Clothes {
         let queryStatementString = "SELECT * FROM Clothes WHERE id = ?;"
         var queryStatement: OpaquePointer? = nil
-        var clothes: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: -1, image: Data(base64Encoded: "")!)
+        var clothes: Clothes = Clothes(id: -1, name: "N/A", description: "undefined", category: "", tempMin: -1, tempMax: 1, image: Data(base64Encoded: "")!)
         
         if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
             sqlite3_bind_int(queryStatement, 1, Int32(id))
@@ -329,7 +330,7 @@ class DBManager
         return clothes
     }
     
-    func selectDice(currentTemp: Int) -> [Clothes] {
+    func selectRandomLooksetByTemp(currentTemp: Int) -> [Clothes] {
         var finallySet: [Clothes] = []
         var potentialClothes: [Clothes]
         
