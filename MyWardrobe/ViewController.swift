@@ -125,6 +125,10 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func updateAllClothesTable() {
         self.allClothes = dbConnection.readClothes()
+        reloadTables()
+    }
+    
+    func reloadTables() {
         self.clothesTableView.reloadData()
         self.clothesWithImageTableView.reloadData()
     }
@@ -141,7 +145,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func showSelectedLookset(currentLookset: Lookset) {
         self.allClothes = dbConnection.unpackLooksetToArray(looksetClass: currentLookset)
-        self.clothesTableView.reloadData()
+        reloadTables()
         
         setCurrentTemp(currentTemp: currentLookset.looksetTemp)
         saveLooksetButton.isHidden = true
@@ -166,7 +170,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func loadClothesTableByCategory(category: String) {
         self.allClothes = dbConnection.selectByCategory(category: category)
-        self.clothesTableView.reloadData()
+        reloadTables()
         saveLooksetButton.isHidden = true
     }
     
@@ -320,7 +324,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     @IBAction func diceButtonPressed(_ sender: UIButton) {
         self.allClothes = dbConnection.selectDice(currentTemp: self.currentTempValue)
-        self.clothesTableView.reloadData()
+        reloadTables()
         saveLooksetButton.isHidden = false
     }
     

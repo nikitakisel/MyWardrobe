@@ -240,7 +240,10 @@ class DBManager
         let clothesIndexes: [Int] = [looksetClass.headId, looksetClass.jacketId, looksetClass.tshirtId, looksetClass.trousersId, looksetClass.shoesId].filter { $0 != -1 }
         
         for index in clothesIndexes {
-            unpackedLookset.append(selectClothesById(id: index))
+            let currentClothes = selectClothesById(id: index)
+            if currentClothes.id != -1 {
+                unpackedLookset.append(currentClothes)
+            }
         }
         
         return unpackedLookset
@@ -305,7 +308,7 @@ class DBManager
     func selectClothesById(id: Int) -> Clothes {
         let queryStatementString = "SELECT * FROM Clothes WHERE id = ?;"
         var queryStatement: OpaquePointer? = nil
-        var clothes: Clothes = Clothes(id: -1, name: "", description: "", category: "", tempMin: -1, tempMax: -1, image: Data(base64Encoded: "")!)
+        var clothes: Clothes = Clothes(id: -1, name: "N/A", description: "undefined", category: "", tempMin: -1, tempMax: 1, image: Data(base64Encoded: "")!)
         
         if sqlite3_prepare_v2(db, queryStatementString, -1, &queryStatement, nil) == SQLITE_OK {
             sqlite3_bind_int(queryStatement, 1, Int32(id))
