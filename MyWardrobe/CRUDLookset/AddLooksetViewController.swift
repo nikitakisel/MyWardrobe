@@ -179,7 +179,7 @@ class AddLooksetViewController: UIViewController, UINavigationControllerDelegate
         let chooseClothesForLooksetVC = sb.instantiateViewController(withIdentifier: "ChooseClothesForLooksetViewController") as! ChooseClothesForLooksetViewController
         chooseClothesForLooksetVC.addClothesForLooksetDelegate = self
         
-        chooseClothesForLooksetVC.updateChooseClothesTable(clothesForChoosing: dbConnection.selectByCategoryAndTemp(category: category, temp: self.currentTempValue))
+        chooseClothesForLooksetVC.updateChooseClothesTable(clothesForChoosing: dbConnection.selectClothesByCategoryAndTemp(category: category, temp: self.currentTempValue))
         navigationController?.pushViewController(chooseClothesForLooksetVC, animated: true)
     }
     

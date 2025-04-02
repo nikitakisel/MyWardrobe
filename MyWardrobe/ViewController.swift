@@ -67,29 +67,27 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     var currentTempValue = 25
     var isClothesWithImageTableViewActivated = false
     
-    //!!!!!!!
-    var importedFilename: String = ""
-    var exportedFilename: String = ""
-    //!!!!!!!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         saveLooksetButton.isHidden = true
         
         clothesTableView.delegate = self
         clothesTableView.dataSource = self
+        clothesTableView.tag = 1
         
         clothesWithImageTableView.dataSource = self
         clothesWithImageTableView.delegate = self
+        clothesWithImageTableView.tag = 2
+        clothesWithImageTableView.isHidden = true
         
         currentTempPickerView.dataSource = self
         currentTempPickerView.delegate = self
-        
+
         for i in -40...50 {
             temps.append(i)
         }
-        temps.reverse()
         
+        temps.reverse()
         setCurrentTemp(currentTemp: 25)
         
         let clothesTableViewNib = UINib(nibName: "MainClothesTableViewCell", bundle: nil)
@@ -97,10 +95,6 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         
         let clothesWithImageTableViewNib = UINib(nibName: "ImageClothesTableViewCell", bundle: nil)
         clothesWithImageTableView.register(clothesWithImageTableViewNib, forCellReuseIdentifier: "ImageClothesTableViewCell")
-        
-        self.clothesWithImageTableView.isHidden = true
-        self.clothesTableView.tag = 1
-        self.clothesWithImageTableView.tag = 2
         
         updateAllClothesTable()
 
@@ -125,10 +119,10 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func updateAllClothesTable() {
         self.allClothes = dbConnection.readClothes()
-        reloadTables()
+        reloadTablesData()
     }
     
-    func reloadTables() {
+    func reloadTablesData() {
         self.clothesTableView.reloadData()
         self.clothesWithImageTableView.reloadData()
     }
@@ -145,7 +139,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func showSelectedLookset(currentLookset: Lookset) {
         self.allClothes = dbConnection.unpackLooksetToArray(looksetClass: currentLookset)
-        reloadTables()
+        reloadTablesData()
         
         setCurrentTemp(currentTemp: currentLookset.looksetTemp)
         saveLooksetButton.isHidden = true
@@ -168,38 +162,24 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
         navigationController?.pushViewController(addClothesVC, animated: true)
     }
     
-    func loadClothesTableByCategory(category: String) {
-        self.allClothes = dbConnection.selectByCategory(category: category)
-        reloadTables()
-        saveLooksetButton.isHidden = true
-    }
-    
     
     @IBAction func saveDataButtonPressed(_ sender: UIButton) {
         do {
             let jsonData = JsonData(clothes: dbConnection.readClothes(), looksets: dbConnection.readLookset())
-                let encoder = JSONEncoder()
-                let data = try encoder.encode(jsonData)
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(jsonData)
 
-                let tempDirURL = FileManager.default.temporaryDirectory
-                let tempFileURL = tempDirURL.appendingPathComponent("data.json")
-                try data.write(to: tempFileURL)
+            let tempDirURL = FileManager.default.temporaryDirectory
+            let tempFileURL = tempDirURL.appendingPathComponent("data.json")
+            try data.write(to: tempFileURL)
 
-                let activityViewController = UIActivityViewController(activityItems: [tempFileURL], applicationActivities: nil)
-                present(activityViewController, animated: true) {
-                    
-                    if let url = activityViewController.value(forKey: "activityItemsConfiguration") as? URL {  // Try to get the URL
-                        self.exportedFilename = url.lastPathComponent  // Set the filename
-                    } else {
-                        self.exportedFilename = "Отменено пользователем"  // Indicate it was cancelled
-                    }
-                }
+            let activityViewController = UIActivityViewController(activityItems: [tempFileURL], applicationActivities: nil)
+            present(activityViewController, animated: true)
             self.alert(message: "Данные экспортированы")
 
 
             } catch {
                 print("Ошибка сериализации или записи в файл: \(error)")
-                exportedFilename = "Ошибка экспорта"
         }
     }
     
@@ -214,15 +194,11 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let selectedFileURL = urls.first else {
-            importedFilename = "Ошибка: Файл не выбран"
             return
         }
 
         do {
-            // 2. Проверяем, доступен ли файл
             let isSecuredURL = selectedFileURL.startAccessingSecurityScopedResource()
-
-            // 3. Считываем данные из файла JSON
             let data = try Data(contentsOf: selectedFileURL)
             let decoder = JSONDecoder()
 
@@ -239,31 +215,25 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
                 for item in jsonData.looksets {
                     dbConnection.insertIntoLookset(looksetName: item.looksetName, looksetDescription: item.looksetDescription, looksetTemp: item.looksetTemp, headId: item.headId, jacketId: item.jacketId, tshirtId: item.tshirtId, trousersId: item.trousersId, shoesId: item.shoesId)
                 }
-
-                // Stop accessing the resource:
+                
                 if isSecuredURL {
                     selectedFileURL.stopAccessingSecurityScopedResource()
                 }
 
-                // 5. Обновляем UI
-                importedFilename = selectedFileURL.lastPathComponent // Set the filename.
                 self.alert(message: "Данные импортированы")
 
             } catch let decodingError as DecodingError {
                 // Обработка ошибки десериализации JSON
                 print("Ошибка десериализации JSON: \(decodingError)")
-                importedFilename = "Ошибка: Неправильный формат файла JSON"
                 handleDecodingError(decodingError) // Вызываем функцию для детальной обработки ошибки
                 self.error(message: "Неправильный формат файла JSON")
             } catch {
                 // Обработка других ошибок (например, ошибка чтения файла)
                 print("Ошибка чтения файла: \(error)")
-                importedFilename = "Ошибка импорта"
                 self.error(message: "Ошибка чтения файла")
             }
         } catch {
             print("Ошибка чтения или десериализации файла: \(error)")
-            importedFilename = "Ошибка импорта"
             self.error(message: "Ошибка чтения или десериализации файла")
         }
     }
@@ -286,9 +256,14 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         controller.dismiss(animated: true, completion: nil)
-        importedFilename = "Импорт отменен пользователем"
     }
-
+    
+    
+    func loadClothesTableByCategory(category: String) {
+        self.allClothes = dbConnection.selectClothesByCategory(category: category)
+        reloadTablesData()
+        saveLooksetButton.isHidden = true
+    }
     
     
     @IBAction func headClothesButtonPressed(_ sender: UIButton) {
@@ -323,8 +298,8 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     
     @IBAction func diceButtonPressed(_ sender: UIButton) {
-        self.allClothes = dbConnection.selectDice(currentTemp: self.currentTempValue)
-        reloadTables()
+        self.allClothes = dbConnection.selectRandomLooksetByTemp(currentTemp: self.currentTempValue)
+        reloadTablesData()
         saveLooksetButton.isHidden = false
     }
     
@@ -382,7 +357,7 @@ class ViewController: UIViewController, AddNewClothesDelegate, ShowClothesItemIn
     
     func error(message: String) {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Ошибка!", message: message, preferredStyle: .alert)
+            let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }

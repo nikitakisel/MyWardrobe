@@ -22,14 +22,15 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var previewImageView: UIImageView!
     @IBOutlet weak var imageNameLabel: UILabel!
     
+    weak var addNewClothesDelegate: AddNewClothesDelegate?
     weak var updateClothesDelegate: AddNewClothesDelegate?
     weak var uploadInfoDelegate: UploadInfoDelegate?
-    var isEditingModeOn = false
-    var postIdForEditing = -1
     
+    var isEditingModeOn = false
+    
+    var postIdForEditing = -1
     var categories: [String] = ["Голова", "Верхняя", "Под верх", "Нижняя", "Обувь"]
     var temps: [Int] = []
-    var addNewClothesDelegate: AddNewClothesDelegate?
     
     var category: String = ""
     var tempMinValue: Int = -1
@@ -61,32 +62,8 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
         }
         temps.reverse()
         
-        if !self.categories.isEmpty {
-            var defaultRow = 0
-            
-            if let elemIndex = self.categories.firstIndex(of: "Голова") {
-                defaultRow = elemIndex
-                self.category = "Голова"
-            }
-            self.categoryPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-        }
-        
-        if !temps.isEmpty {
-            var defaultRow = 0
-            
-            if let elemIndex = temps.firstIndex(of: -40) {
-                defaultRow = elemIndex
-                self.tempMinValue = -40
-            }
-            self.tempMinPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-            
-            if let elemIndex = temps.firstIndex(of: 50) {
-                defaultRow = elemIndex
-                self.tempMaxValue = 50
-            }
-            self.tempMaxPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-        }
-
+        self.initTempPickerViews(minValue: -40, maxValue: 50)
+        self.initStringPickerView(categoryValue: "Голова")
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapGesture.cancelsTouchesInView = false // Allows touches to be passed to other views
@@ -94,6 +71,36 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
 
         self.nameTextField.delegate = self
         self.descriptionTextField.delegate = self
+    }
+    
+    func initTempPickerViews(minValue: Int, maxValue: Int) {
+        if !temps.isEmpty {
+            var defaultRow = 0
+            
+            if let elemIndex = temps.firstIndex(of: minValue) {
+                defaultRow = elemIndex
+                self.tempMinValue = minValue
+            }
+            self.tempMinPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+            
+            if let elemIndex = temps.firstIndex(of: maxValue) {
+                defaultRow = elemIndex
+                self.tempMaxValue = maxValue
+            }
+            self.tempMaxPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+        }
+    }
+
+    func initStringPickerView(categoryValue: String) {
+        if !self.categories.isEmpty {
+            var defaultRow = 0
+            
+            if let elemIndex = self.categories.firstIndex(of: categoryValue) {
+                defaultRow = elemIndex
+                self.category = categoryValue
+            }
+            self.categoryPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -120,31 +127,8 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
             self.imageData = clothesInfo.image!
             displayBase64Image(imageData: clothesInfo.image, imageView: self.previewImageView)
             
-            if !self.categories.isEmpty {
-                var defaultRow = 0
-                
-                if let elemIndex = self.categories.firstIndex(of: clothesInfo.category) {
-                    defaultRow = elemIndex
-                    self.category = clothesInfo.category
-                }
-                self.categoryPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-            }
-            
-            if !self.temps.isEmpty {
-                var defaultRow = 0
-                
-                if let elemIndex = self.temps.firstIndex(of: clothesInfo.tempMin) {
-                    defaultRow = elemIndex
-                    self.tempMinValue = clothesInfo.tempMin
-                }
-                self.tempMinPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-                
-                if let elemIndex = self.temps.firstIndex(of: clothesInfo.tempMax) {
-                    defaultRow = elemIndex
-                    self.tempMaxValue = clothesInfo.tempMax
-                }
-                self.tempMaxPickerView.selectRow(defaultRow, inComponent: 0, animated: false)
-            }
+            self.initTempPickerViews(minValue: clothesInfo.tempMin, maxValue: clothesInfo.tempMax)
+            self.initStringPickerView(categoryValue: clothesInfo.category)
         }
     }
     

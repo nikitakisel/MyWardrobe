@@ -196,8 +196,6 @@ class DBManager
                 let image = String(describing: String(cString: sqlite3_column_text(queryStatement, 6)))
                 
                 clothes.append(Clothes(id: Int(id), name: name, description: description, category: category, tempMin: Int(tempMin), tempMax: Int(tempMax), image: (Data(base64Encoded: image)!)))
-//                print("Query Result:")
-//                print("\(id) | \(name) | \(description) | \(category) | \(tempMin) | \(tempMax)")
             }
         } else {
             print("SELECT statement could not be prepared")
@@ -249,7 +247,7 @@ class DBManager
         return unpackedLookset
     }
     
-    func selectByCategory(category: String) -> [Clothes] {
+    func selectClothesByCategory(category: String) -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes WHERE category = ?;"
         var queryStatement: OpaquePointer? = nil
         var clothes : [Clothes] = []
@@ -276,7 +274,7 @@ class DBManager
         return clothes
     }
     
-    func selectByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
+    func selectClothesByCategoryAndTemp(category: String, temp: Int) -> [Clothes] {
         let queryStatementString = "SELECT * FROM Clothes WHERE category = ? AND temp_min <= ? AND temp_max >= ?;"
         var queryStatement: OpaquePointer? = nil
         var clothes : [Clothes] = []
@@ -332,7 +330,7 @@ class DBManager
         return clothes
     }
     
-    func selectDice(currentTemp: Int) -> [Clothes] {
+    func selectRandomLooksetByTemp(currentTemp: Int) -> [Clothes] {
         var finallySet: [Clothes] = []
         var potentialClothes: [Clothes]
         
