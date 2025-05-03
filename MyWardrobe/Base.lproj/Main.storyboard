@@ -440,6 +440,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="Данные" id="sDf-Z5-YOt"/>
                     <connections>
+                        <outlet property="addClothesButton" destination="qkb-lb-wEu" id="tqJ-VZ-qet"/>
                         <outlet property="categoryPickerView" destination="2w4-Nr-vtf" id="P5g-2F-ZbE"/>
                         <outlet property="descriptionTextField" destination="O85-Yy-YoK" id="pdW-Dw-Mfu"/>
                         <outlet property="imageNameLabel" destination="kff-0l-n11" id="PzX-9D-axT"/>
