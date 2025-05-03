@@ -21,6 +21,7 @@ class AddClothesViewController: UIViewController, UIImagePickerControllerDelegat
     
     @IBOutlet weak var previewImageView: UIImageView!
     @IBOutlet weak var imageNameLabel: UILabel!
+    @IBOutlet weak var addClothesButton: UIButton!
     
     weak var addNewClothesDelegate: AddNewClothesDelegate?
     weak var updateClothesDelegate: AddNewClothesDelegate?
